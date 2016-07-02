@@ -139,10 +139,10 @@ public class DSP{
                     writeData(lowByte(c));
                     writeData(highByte(c));
                     i--;
-                    if((lowNyb(ref) - 1) == -1){
+                    if((highNyb(ref) - 1) == -1){
                         c = 0;
                     }else{
-                        c = color[lowNyb(ref) - 1];
+                        c = color[highNyb(ref) - 1];
                     }
                     writeData(lowByte(c));
                     writeData(highByte(c));
@@ -163,6 +163,10 @@ public class DSP{
     
     private int lowNyb(int d){
         return d & 0x0F;
+    }
+    
+    private int highNyb(int d){
+        return (d & 0xF0) >> 4;
     }
     
     private void writeData(int d) {
