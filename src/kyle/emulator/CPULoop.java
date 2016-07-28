@@ -21,9 +21,13 @@ public class CPULoop implements Runnable{
     private boolean running;
     private boolean playing;
     private int cycle;
+    private int delay;
+    private int cycleDelay;
     
     public CPULoop(Z80Core c) {
         CPU = c;
+        delay = 100;
+        cycleDelay = 20000;
     }
     
     @Override
@@ -38,7 +42,7 @@ public class CPULoop implements Runnable{
             if (active & playing) {
                 try {
                     CPU.executeOneInstruction();
-                    if (cycle > 20000) {
+                    if (cycle > cycleDelay) {
                         KyleEmulator.getEmulator().getStats().setPC(CPU.getRegisterValue(RegisterNames.PC));
                         KyleEmulator.getEmulator().getStats().setA(CPU.getRegisterValue(RegisterNames.A));
                         KyleEmulator.getEmulator().getStats().setA_ALT(CPU.getRegisterValue(RegisterNames.A_ALT));
@@ -59,7 +63,7 @@ public class CPULoop implements Runnable{
                     }else{
                         cycle ++;
                     }
-                    Utils.halt(100);
+                    Utils.halt(delay);
                 } catch (Exception ex) {
                     Logger.getLogger(CPULoop.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -94,6 +98,16 @@ public class CPULoop implements Runnable{
 
     public boolean isActive() {
         return active;
+    }
+
+    public void setDebug(boolean selected) {
+        if(selected){
+            delay = 100000000;
+            cycleDelay = -1;
+        }else{
+            delay = 100;
+            cycleDelay = 20000;
+        }
     }
     
 }

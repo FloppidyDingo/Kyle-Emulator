@@ -49,6 +49,7 @@ public class MainFrame extends javax.swing.JFrame {
         exit = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         pause = new javax.swing.JCheckBoxMenuItem();
+        debug = new javax.swing.JCheckBoxMenuItem();
         Stop = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         options = new javax.swing.JMenuItem();
@@ -108,6 +109,15 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
         jMenu3.add(pause);
+
+        debug.setText("Debug Mode");
+        debug.setToolTipText("");
+        debug.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                debugActionPerformed(evt);
+            }
+        });
+        jMenu3.add(debug);
 
         Stop.setText("Stop");
         Stop.addActionListener(new java.awt.event.ActionListener() {
@@ -230,6 +240,11 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_openActionPerformed
 
+    private void debugActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debugActionPerformed
+        // TODO add your handling code here:
+        emulator.getLoop().setDebug(debug.isSelected());
+    }//GEN-LAST:event_debugActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -261,6 +276,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem Stop;
+    private javax.swing.JCheckBoxMenuItem debug;
     private javax.swing.JMenuItem exit;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -300,4 +316,8 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
    }
+
+    public boolean getDebugMode() {
+        return debug.isSelected();
+    }
 }

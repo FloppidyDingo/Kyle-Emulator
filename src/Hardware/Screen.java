@@ -25,24 +25,24 @@ public class Screen extends JPanel{
     public void paintComponent(Graphics g){
         super.paintComponent(g);
         memory = KyleEmulator.getEmulator().getDsp().process();
-        int index = 0;
-        for(int x = 319; x > -1; x--){
-            for(int y = 0; y < 240; y ++){
-                int color = (memory[index] + (memory[index + 1] * 256));
-                img.setRGB(x, y, convert16_32(color));
-                index += 2;
+        for(int x = 0; x < 160; x ++){
+            for(int y = 0; y < 128; y ++){
+                int color = (memory[(y * 160) + x]);
+                img.setRGB(x, y, convert8_32(color));
             }
         }
         g.drawImage(img, 0, 0, this.getSize().width, this.getSize().height, this);
     }
 
     public Screen() {
-        img = new BufferedImage(320, 240, BufferedImage.TYPE_USHORT_565_RGB);
+        img = new BufferedImage(160, 128, BufferedImage.TYPE_USHORT_565_RGB);
         timer = new Timer(1000/30, (ActionEvent e) -> {
             KyleEmulator.getEmulator().getLoop().busRequest();
             action();
             KyleEmulator.getEmulator().getLoop().busRelease();
-            KyleEmulator.getEmulator().getCpu().setNMI();
+            if (!KyleEmulator.getEmulator().getGui().getDebugMode()) {
+                KyleEmulator.getEmulator().getCpu().setNMI();
+            }
         });
     }
     
@@ -50,13 +50,13 @@ public class Screen extends JPanel{
         this.repaint();
     }
     
-    private int convert16_32(int rgb) { // conerts 16 bit color to 32 bit color
-        int r = ((rgb & 0b1111100000000000) >> 11);
-        int g = ((rgb & 0b0000011111100000) >> 5);
-        int b = ((rgb & 0b0000000000011111));
-        r = (int)(1023 * ((float)r / 31));
-        g = (int)(4095 * ((float)g / 63));
-        b = (int)(1023 * ((float)b / 31));
+    private int convert8_32(int rgb) { // conerts 8 bit color to 32 bit color
+        int r = ((rgb & 0b11100000) >> 5);
+        int g = ((rgb & 0b00011100) >> 2);
+        int b = ((rgb & 0b00000011));
+        r = (int)(1023 * ((float)r / 7));
+        g = (int)(4095 * ((float)g / 7));
+        b = (int)(1023 * ((float)b / 3));
         return ((r << 22) | (g << 10) | b);
     }
     

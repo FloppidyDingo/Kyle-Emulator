@@ -84,23 +84,16 @@ public class Memory implements IMemory{
 
     @Override
     public synchronized void writeWord(int address, int data) {
-        int D = (byte) (data & 0xFF);
+        int D = (data & 0x000000FF);
         if(Utils.inRange(address, 0x8000, 0xFFFF)){
             address = address - 32768;
             RAM[address] = D;
-        }
-        if(address == 0x7FFF){
-            ROM[address] = D;
-        }
-        address += 1;
-        D = (byte) ((data >> 8) & 0xFF);
-        if(Utils.inRange(address, 0x8000, 0xFFFF)){
+            address += 1;
+            D = ((data & 0x0000FF00) >> 8);
             RAM[address] = D;
         }
-        if(address == 0x7FFF){
-            ROM[address] = D;
-        }
     }
+    
     public void loadBIOS(File f){
         try {
             Path path = Paths.get(f.getAbsolutePath());
