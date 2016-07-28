@@ -1,83 +1,76 @@
 package Hardware;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
+import com.jsyn.JSyn;
+import com.jsyn.Synthesizer;
+import com.jsyn.unitgen.LineOut;
+import com.jsyn.unitgen.MixerMono;
+import com.jsyn.unitgen.SquareOscillator;
+import com.jsyn.unitgen.WhiteNoise;
 
 public class Audio {
     
-    private final int sampleRate;
-    private int volume;
-    private Clip clip;
-    private final AudioFormat af; 
-    private final byte[] buf;
+    private final MixerMono mixer;
+    private final Synthesizer synth;
+    private final SquareOscillator channelA;
+    private final SquareOscillator channelB;
+    private final WhiteNoise channelC;
+    private final LineOut line;
+    private double volume;
 
     public Audio() {
-        this.sampleRate = 8000;
-        this.volume = 127;
-        this.af = new AudioFormat(sampleRate, 8, 2, true, false);
-        buf = new byte[16000];
+        synth = JSyn.createSynthesizer();
+        channelA = new SquareOscillator();
+        channelB = new SquareOscillator();
+        channelC = new WhiteNoise();
+        line = new LineOut();
+        mixer = new MixerMono(3);
+        synth.add(line);
+        synth.add(channelA);
+        synth.add(channelB);
+        synth.add(channelC);
+        channelA.output.connect(0, mixer.input, 0);
+        channelB.output.connect(0, mixer.input, 0);
+        channelC.output.connect(0, mixer.input, 0);
+        mixer.output.connect(0, line.input, 0);
+        mixer.output.connect(0, line.input, 1);
+        channelA.frequency.set(0);
+        channelB.frequency.set(0);
+        channelC.amplitude.set(0);
+        synth.start();
+        line.start();
     }
     
-    public void tone(int freq){
-        if(freq == 0){
-            return;
-        }
-        int frequency = freq;
-        if ( clip!=null ) {
-            clip.stop();
-            clip.close();
-        } else {
-            try {
-                clip = AudioSystem.getClip();
-            } catch (LineUnavailableException ex) {
-                Logger.getLogger(Audio.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        int frame = 0;
-        for(int i=0; i<8000; i++){
-            if(frame > (8000 / frequency * 10)){
-                buf[i*2] = (byte)volume;
-                frame = 0;
-            }else{
-                buf[i*2] = 0;
-            }
-            frame ++;
-            buf[(i*2)+1] = buf[i*2];
-        }
-        try {
-            AudioInputStream stream = new AudioInputStream(new ByteArrayInputStream(buf), af, buf.length/2 );
-            clip.open(stream);
-            clip.loop(Clip.LOOP_CONTINUOUSLY);
-        } catch(LineUnavailableException | IOException e) {
-            e.printStackTrace();
+    public void toneA(int freq){
+        if(freq != 0){
+            channelA.frequency.set(freq);
+        }else{
+            channelA.frequency.set(0);
         }
     }
     
-    public void noTone(){
-        if(clip == null){
-            try {
-                clip = AudioSystem.getClip();
-            } catch (LineUnavailableException ex) {
-                Logger.getLogger(Audio.class.getName()).log(Level.SEVERE, null, ex);
-            }
+    public void toneB(int freq){
+        if(freq != 0){
+            channelB.frequency.set(freq);
+        }else{
+            channelB.frequency.set(0);
         }
-        clip.stop();
-        clip.close();
+    }
+    
+    public void noise(boolean active){
+        if(active){
+            channelC.amplitude.set(10);
+        }else{
+            channelC.amplitude.set(0);
+        }
     }
 
-    public int getVolume() {
+    public double getVolume() {
         return volume;
     }
 
-    public void setVolume(int volume) {
+    public void setVolume(double volume) {
         this.volume = volume;
+        mixer.amplitude.set(volume / 10);
     }
     
 }
